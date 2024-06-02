@@ -6,19 +6,27 @@ import {
 	fetchDates,
 } from './services/API/fetchDates';
 
+type AnswerObject = {
+	question: string;
+	answer: string;
+	correct: boolean;
+	correctAnswer: string;
+};
+
 const TOTAL_QUESTIONS = 10;
 
 const App = () => {
 	const [isLoading, setIsLoading] = useState(false);
 	const [questions, setQuestions] = useState<QuestionsState[]>([]);
 	const [number, setNumber] = useState(0);
-	const [userAnswer, setUserAnswer] = useState([]);
+	const [userAnswer, setUserAnswer] = useState<AnswerObject[]>([]);
 	const [score, setScore] = useState(0);
-	const [isGameOver, setIsGameOver] = useState(false);
+	const [isGameOver, setIsGameOver] = useState(true);
 
 	const startQuiz = async () => {
 		try {
 			setIsLoading(true);
+			setIsGameOver(false);
 			const newQuestions = await fetchDates(TOTAL_QUESTIONS, Difficulties.EASY);
 			setQuestions(newQuestions);
 		} catch (e) {
@@ -39,12 +47,14 @@ const App = () => {
 	return (
 		<div>
 			<h1 className='title'>Quizweiss</h1>
-			<button className='start' onClick={startQuiz}>
-				Start Quiz
-			</button>
+			{(isGameOver || userAnswer.length === TOTAL_QUESTIONS) && (
+				<button className='start' onClick={startQuiz}>
+					Start Quiz
+				</button>
+			)}
 			<p className='score'>Your score: {score}</p>
-			<p className='loading'>Loading questions...</p>
-			{questions.length > 0 && (
+			{isLoading && <p className='loading'>Loading questions...</p>}
+			{!isLoading && !isGameOver && (
 				<QuestionCard
 					totalQuestions={TOTAL_QUESTIONS}
 					questionNr={number + 1}
