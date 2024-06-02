@@ -1,8 +1,11 @@
+import { MouseEvent } from 'react';
+import { AnswerObject } from '../App';
+
 interface QuestionCardProps {
 	question: string;
 	answers: string[];
-	callback: any;
-	userAnswer: any;
+	callback: (e: MouseEvent<HTMLButtonElement>) => void;
+	userAnswer: AnswerObject | null;
 	questionNr: number;
 	totalQuestions: number;
 }
@@ -24,7 +27,8 @@ const QuestionCard = ({
 			<div>
 				{answers.map((answer) => (
 					<div key={answer}>
-						<button disabled={userAnswer} onClick={callback}>
+						{/* !! - do type boolean */}
+						<button disabled={!!userAnswer} onClick={callback}>
 							<span dangerouslySetInnerHTML={{ __html: answer }} />
 						</button>
 					</div>

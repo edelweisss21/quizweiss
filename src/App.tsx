@@ -6,9 +6,9 @@ import {
 	fetchDates,
 } from './services/API/fetchDates';
 
-type AnswerObject = {
+export type AnswerObject = {
 	question: string;
-	answer: string;
+	answer: string | null;
 	correct: boolean;
 	correctAnswer: string;
 };
@@ -40,9 +40,31 @@ const App = () => {
 	};
 	console.log('questions', questions);
 
-	const checkAnswer = (e: MouseEvent<HTMLButtonElement>) => {};
+	const checkAnswer = (e: MouseEvent<HTMLButtonElement>) => {
+		if (!isGameOver) {
+			const answer = e.currentTarget.textContent;
+			const correct = questions[number].correct_answer === answer;
+			if (correct) setScore((prev) => prev + 1);
+			const answerObject = {
+				question: questions[number].question,
+				answer,
+				correct,
+				correctAnswer: questions[number].correct_answer,
+			};
+			setUserAnswer((prev) => [...prev, answerObject]);
+		}
+	};
 
-	const nextQuestion = () => {};
+	console.log('userAnswer', userAnswer);
+
+	const nextQuestion = () => {
+		const nextQuestion = number + 1;
+		if (nextQuestion === TOTAL_QUESTIONS) {
+			setIsGameOver(true);
+		} else {
+			setNumber(nextQuestion);
+		}
+	};
 
 	return (
 		<div>
@@ -52,7 +74,7 @@ const App = () => {
 					Start Quiz
 				</button>
 			)}
-			<p className='score'>Your score: {score}</p>
+			{!isGameOver && <p className='score'>Your score: {score}</p>}
 			{isLoading && <p className='loading'>Loading questions...</p>}
 			{!isLoading && !isGameOver && (
 				<QuestionCard
@@ -64,9 +86,14 @@ const App = () => {
 					callback={checkAnswer}
 				/>
 			)}
-			<button className='nextQuestion' onClick={nextQuestion}>
-				Next question
-			</button>
+			{!isGameOver &&
+			!isLoading &&
+			userAnswer.length === number + 1 &&
+			number !== TOTAL_QUESTIONS - 1 ? (
+				<button className='nextQuestion' onClick={nextQuestion}>
+					Next question
+				</button>
+			) : null}
 		</div>
 	);
 };
