@@ -1,5 +1,7 @@
 import { MouseEvent } from 'react';
-import { AnswerObject } from '../App';
+import { AnswerObject } from '../hooks/useQuiz';
+import { ButtonWrapper, Wrapper } from './QuestionCard.styles';
+import parse from 'html-react-parser';
 
 interface QuestionCardProps {
 	question: string;
@@ -19,22 +21,31 @@ const QuestionCard = ({
 	totalQuestions,
 }: QuestionCardProps) => {
 	return (
-		<div>
+		<Wrapper>
 			<p className='number'>
-				Question: {questionNr} / {totalQuestions}
+				Question: <span className='questionNum'>{questionNr}</span> /
+				{totalQuestions}
 			</p>
-			<p dangerouslySetInnerHTML={{ __html: question }} />
+			<p>{parse(question)}</p>
 			<div>
 				{answers.map((answer) => (
-					<div key={answer}>
+					<ButtonWrapper
+						$correct={userAnswer?.correctAnswer === answer}
+						$userClicked={userAnswer?.answer === answer}
+						key={answer}
+					>
 						{/* !! - do type boolean */}
-						<button disabled={!!userAnswer} onClick={callback}>
-							<span dangerouslySetInnerHTML={{ __html: answer }} />
+						<button
+							className='button'
+							disabled={!!userAnswer}
+							onClick={callback}
+						>
+							<span>{parse(answer)}</span>
 						</button>
-					</div>
+					</ButtonWrapper>
 				))}
 			</div>
-		</div>
+		</Wrapper>
 	);
 };
 

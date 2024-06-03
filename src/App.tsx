@@ -1,100 +1,54 @@
-import { MouseEvent, useState } from 'react';
 import QuestionCard from './components/QuestionCard';
-import {
-	Difficulties,
-	QuestionsState,
-	fetchDates,
-} from './services/API/fetchDates';
-
-export type AnswerObject = {
-	question: string;
-	answer: string | null;
-	correct: boolean;
-	correctAnswer: string;
-};
-
-const TOTAL_QUESTIONS = 10;
+import { GlobalStyle, Wrapper } from './App.styles';
+import { Loader } from './components/UI/Loader.styles';
+import { useQuiz } from './hooks/useQuiz';
 
 const App = () => {
-	const [isLoading, setIsLoading] = useState(false);
-	const [questions, setQuestions] = useState<QuestionsState[]>([]);
-	const [number, setNumber] = useState(0);
-	const [userAnswer, setUserAnswer] = useState<AnswerObject[]>([]);
-	const [score, setScore] = useState(0);
-	const [isGameOver, setIsGameOver] = useState(true);
-
-	const startQuiz = async () => {
-		try {
-			setIsLoading(true);
-			setIsGameOver(false);
-			const newQuestions = await fetchDates(TOTAL_QUESTIONS, Difficulties.EASY);
-			setQuestions(newQuestions);
-		} catch (e) {
-			console.error(e);
-		} finally {
-			setIsLoading(false);
-			setNumber(0);
-			setScore(0);
-			setUserAnswer([]);
-		}
-	};
-	console.log('questions', questions);
-
-	const checkAnswer = (e: MouseEvent<HTMLButtonElement>) => {
-		if (!isGameOver) {
-			const answer = e.currentTarget.textContent;
-			const correct = questions[number].correct_answer === answer;
-			if (correct) setScore((prev) => prev + 1);
-			const answerObject = {
-				question: questions[number].question,
-				answer,
-				correct,
-				correctAnswer: questions[number].correct_answer,
-			};
-			setUserAnswer((prev) => [...prev, answerObject]);
-		}
-	};
-
-	console.log('userAnswer', userAnswer);
-
-	const nextQuestion = () => {
-		const nextQuestion = number + 1;
-		if (nextQuestion === TOTAL_QUESTIONS) {
-			setIsGameOver(true);
-		} else {
-			setNumber(nextQuestion);
-		}
-	};
+	const {
+		nextQuestion,
+		checkAnswer,
+		startQuiz,
+		score,
+		userAnswer,
+		isLoading,
+		isGameOver,
+		questions,
+		TOTAL_QUESTIONS,
+		number,
+	} = useQuiz();
 
 	return (
-		<div>
-			<h1 className='title'>Quizweiss</h1>
-			{(isGameOver || userAnswer.length === TOTAL_QUESTIONS) && (
-				<button className='start' onClick={startQuiz}>
-					Start Quiz
-				</button>
-			)}
-			{!isGameOver && <p className='score'>Your score: {score}</p>}
-			{isLoading && <p className='loading'>Loading questions...</p>}
-			{!isLoading && !isGameOver && (
-				<QuestionCard
-					totalQuestions={TOTAL_QUESTIONS}
-					questionNr={number + 1}
-					userAnswer={userAnswer ? userAnswer[number] : null}
-					question={questions[number].question}
-					answers={questions[number].answers}
-					callback={checkAnswer}
-				/>
-			)}
-			{!isGameOver &&
-			!isLoading &&
-			userAnswer.length === number + 1 &&
-			number !== TOTAL_QUESTIONS - 1 ? (
-				<button className='nextQuestion' onClick={nextQuestion}>
-					Next question
-				</button>
-			) : null}
-		</div>
+		<>
+			<GlobalStyle />
+			<Wrapper>
+				<h1 className='title'>Quizweiss</h1>
+				{(isGameOver || userAnswer.length === TOTAL_QUESTIONS) && (
+					<button className='start' onClick={startQuiz}>
+						Start Quiz
+					</button>
+				)}
+				{!isGameOver && <p className='score'>Your score: {score}</p>}
+				{isLoading && <Loader />}
+				{!isLoading && !isGameOver && (
+					<QuestionCard
+						totalQuestions={TOTAL_QUESTIONS}
+						questionNr={number + 1}
+						userAnswer={userAnswer ? userAnswer[number] : null}
+						question={questions[number].question}
+						answers={questions[number].answers}
+						callback={checkAnswer}
+					/>
+				)}
+				{!isGameOver &&
+				!isLoading &&
+				userAnswer.length === number + 1 &&
+				number !== TOTAL_QUESTIONS - 1 ? (
+					<button className='nextQuestion' onClick={nextQuestion}>
+						Next question
+					</button>
+				) : null}
+			</Wrapper>
+		</>
 	);
 };
 
